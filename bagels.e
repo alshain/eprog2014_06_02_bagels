@@ -10,10 +10,19 @@ create
 feature -- Initialization
 	execute
 			-- Play bagels.
+		local
+			d: INTEGER
 		do
-			-- Add your code here.
-			-- Hint: you could write a loop to read the number of digits 
-			-- as user input, and pass it to procedure play.
+			Io.put_string ("*** Welcome to Bagels! ***%N")
+			from
+			until
+				Io.last_integer > 0
+			loop
+				Io.put_string ("Enter the number of digits (positive):%N")
+				Io.read_integer
+			end
+			d := Io.last_integer
+			play (d)
 		end
 
 feature -- Implementation
@@ -26,11 +35,26 @@ feature -- Implementation
 			guess_count: INTEGER
 			guess: STRING
 		do
-			-- Add your code here.
-			-- Hint: You could generate the correct answer with procedure generate_answer.
-			-- Then you could write a loop to read user input (guesses) and count them.
-		end
+			Io.put_string ("I'm thinking of a number...")
+			generate_answer (d)
+			Io.put_string (" Okay, got it!%N")
 
+			from
+			until
+				guess ~ answer
+			loop
+				Io.put_string ("Enter your guess: ")
+				Io.read_line
+				guess := Io.last_string
+				if guess.count = d and guess.is_natural and not guess.has ('0') then
+					print (clue (guess) + "%N")
+					guess_count := guess_count + 1
+				else
+					Io.put_string ("Incorrect input: please enter a positive number with " + d.out + " digits containing no zeros%N")
+				end
+			end
+			print ("Congratulations! You made it in " + guess_count.out + " guesses.")
+		end
 
 	answer: STRING
 			-- Correct answer.		
@@ -48,14 +72,24 @@ feature -- Implementation
 		end
 
 	generate_answer (d: INTEGER)
-			-- Generate a number with `d' non-zero digits and store it in `answer'.
+			-- Generate a number with `d' nonzero digits and store it in `answer'.
 		require
 			d_positive: d > 0
 		local
 			random: V_RANDOM
 			i: INTEGER
 		do
-			-- Your code here.
+			create answer.make_filled (' ', d)
+			create random
+			from
+				i := 1
+			until
+				i > d
+			loop
+				answer [i] := (random.bounded_item (1, 9)).out [1]
+				random.forth
+				i := i + 1
+			end
 		ensure
 			answer_exists: answer /= Void
 			correct_length: answer.count = d
@@ -63,14 +97,49 @@ feature -- Implementation
 			no_zeros: not answer.has ('0')
 		end
 
-
 	clue (guess: STRING): STRING
 			-- Clue for `guess' with respect to `answer'.
 		require
 			answer_exists: answer /= Void
 			guess_exists: guess /= Void
 			same_length: answer.count = guess.count
+		local
+			i, k: INTEGER
+			answer_copy, guess_copy: STRING
 		do
-			-- Add your code here.
+			Result := ""
+			answer_copy := answer.twin
+			guess_copy := guess.twin
+			from
+				i := 1
+			until
+				i > answer_copy.count
+			loop
+				if answer_copy [i] = guess_copy [i] then
+					Result := Result + "Fermi "
+					answer_copy [i] := ' '
+					guess_copy [i] := ' '
+				end
+				i := i + 1
+			end
+			from
+				i := 1
+			until
+				i > answer_copy.count
+			loop
+				if answer_copy [i] /= ' ' then
+					k := guess_copy.index_of (answer_copy [i], 1)
+					if k > 0 then
+						Result := Result + "Pico "
+						guess_copy [k] := ' '
+					end
+				end
+				i := i + 1
+			end
+			if Result.is_empty then
+				Result := "Bagels"
+			end
+		ensure
+			result_exists: Result /= Void
 		end
 end
