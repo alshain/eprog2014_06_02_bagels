@@ -100,23 +100,9 @@ feature -- Implementation
 					fermi:= fermi + "Fermi "
 					copie.remove (copie.index_of (guess[i], 1))
 				else
-					is_pico:= False
-					from
-						m:= guess.new_cursor
-					until
-						is_pico or else m.after
-					loop
-						if not copie.has (m.item)  then
-							m.forth
-						else
-							if answer[i] = m.item then
-								pico:= pico + "Pico "
-								copie.remove (copie.index_of (m.item, 1))
-								is_pico:= True
-							else
-								m.forth
-							end
-						end
+					if (copie.has (answer[i])) then
+						pico:= pico + "Pico "
+						copie.remove (copie.index_of (answer[i], 1))
 					end
 				end
 				i:= i + 1
